@@ -22,6 +22,13 @@ const invoiceSchema = z.object({
     ),
 })
 
+export async function GET() {
+  return Response.json(
+    { error: "Este endpoint solo soporta POST. Envía una imagen en base64." },
+    { status: 405 }
+  )
+}
+
 export async function POST(req: Request) {
   try {
     // Verificar que la API key esté configurada
