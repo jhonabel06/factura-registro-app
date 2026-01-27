@@ -4,9 +4,18 @@ import { createClient } from "@/lib/supabase/client"
 export async function getInvoices(): Promise<Invoice[]> {
   const supabase = createClient()
   
+  // Get current user
+  const { data: { user }, error: userError } = await supabase.auth.getUser()
+  
+  if (userError || !user) {
+    console.error("Error getting current user:", userError)
+    return []
+  }
+  
   const { data, error } = await supabase
     .from("invoices")
     .select("*")
+    .eq("user_id", user.id)
     .order("date", { ascending: false })
   
   if (error) {
@@ -20,9 +29,18 @@ export async function getInvoices(): Promise<Invoice[]> {
 export async function saveInvoice(invoice: Omit<Invoice, "id" | "createdAt">): Promise<Invoice | null> {
   const supabase = createClient()
   
+  // Get current user
+  const { data: { user }, error: userError } = await supabase.auth.getUser()
+  
+  if (userError || !user) {
+    console.error("Error getting current user:", userError)
+    return null
+  }
+  
   const { data, error } = await supabase
     .from("invoices")
     .insert({
+      user_id: user.id,
       vendor: invoice.vendor,
       description: invoice.description,
       subtotal: invoice.amount,

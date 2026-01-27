@@ -15,9 +15,9 @@ interface InvoiceDashboardProps {
 }
 
 function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("es-ES", {
+  return new Intl.NumberFormat("es-DO", {
     style: "currency",
-    currency: "EUR",
+    currency: "DOP",
   }).format(amount)
 }
 

@@ -1,6 +1,8 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import { useRouter } from 'next/navigation'
+import { supabase } from '@/supabaseClient'
 import { Receipt } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { InvoiceUpload } from "@/components/invoice-upload"
@@ -21,25 +23,43 @@ const TIME_RANGES: { value: TimeRange; label: string; periodLabel: string }[] = 
 ]
 
 export default function InvoiceApp() {
+  const router = useRouter()
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [timeRange, setTimeRange] = useState<TimeRange>("month")
   const [isLoading, setIsLoading] = useState(true)
 
-  const loadInvoices = useCallback(async () => {
-    setIsLoading(true)
+  useEffect(() => {
+    // Check authentication and load invoices
+    const initializeApp = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      if (!session) {
+        router.push('/login')
+        return
+      }
+      
+      // Load invoices only if authenticated
+      try {
+        const allInvoices = await getInvoices()
+        setInvoices(allInvoices)
+      } catch (error) {
+        console.error("Error loading invoices:", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    
+    initializeApp()
+  }, [router])
+
+  const handleRefresh = useCallback(async () => {
     try {
       const allInvoices = await getInvoices()
       setInvoices(allInvoices)
     } catch (error) {
       console.error("Error loading invoices:", error)
-    } finally {
-      setIsLoading(false)
     }
   }, [])
-
-  useEffect(() => {
-    loadInvoices()
-  }, [loadInvoices])
 
   if (isLoading) {
     return (
@@ -76,7 +96,7 @@ export default function InvoiceApp() {
 
       <main className="mx-auto max-w-5xl px-4 py-6">
         <div className="mb-6 space-y-6">
-          <InvoiceUpload onInvoiceSaved={loadInvoices} />
+          <InvoiceUpload onInvoiceSaved={handleRefresh} />
         </div>
 
         <Tabs
@@ -105,7 +125,7 @@ export default function InvoiceApp() {
                 </h2>
                 <InvoiceList
                   invoices={filteredInvoices}
-                  onDelete={loadInvoices}
+                  onDelete={handleRefresh}
                 />
               </div>
             </TabsContent>

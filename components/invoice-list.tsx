@@ -1,12 +1,13 @@
 "use client"
 
 import { useState } from "react"
-import { Trash2, FileText, Loader2 } from "lucide-react"
+import { Trash2, FileText, Loader2, Eye } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import type { Invoice } from "@/lib/types"
 import { deleteInvoice } from "@/lib/invoice-store"
+import { InvoiceViewer } from "./invoice-viewer"
 
 interface InvoiceListProps {
   invoices: Invoice[]
@@ -25,9 +26,9 @@ const categoryColors: Record<string, string> = {
 }
 
 function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("es-ES", {
+  return new Intl.NumberFormat("es-DO", {
     style: "currency",
-    currency: "EUR",
+    currency: "DOP",
   }).format(amount)
 }
 
@@ -41,6 +42,8 @@ function formatDate(dateString: string): string {
 
 export function InvoiceList({ invoices, onDelete }: InvoiceListProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null)
+  const [viewerOpen, setViewerOpen] = useState(false)
 
   const handleDelete = async (id: string) => {
     setDeletingId(id)
@@ -75,7 +78,11 @@ export function InvoiceList({ invoices, onDelete }: InvoiceListProps) {
       {invoices.map((invoice) => (
         <Card
           key={invoice.id}
-          className="transition-shadow hover:shadow-md"
+          className="transition-shadow hover:shadow-md cursor-pointer"
+          onClick={() => {
+            setSelectedInvoice(invoice)
+            setViewerOpen(true)
+          }}
         >
           <CardContent className="p-4">
             <div className="flex items-start justify-between gap-4">
@@ -113,13 +120,29 @@ export function InvoiceList({ invoices, onDelete }: InvoiceListProps) {
                     {formatCurrency(invoice.total)}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    IVA: {formatCurrency(invoice.tax)}
+                    ITBIS: {formatCurrency(invoice.tax)}
                   </p>
                 </div>
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => handleDelete(invoice.id)}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setSelectedInvoice(invoice)
+                    setViewerOpen(true)
+                  }}
+                  className="text-muted-foreground hover:text-primary"
+                >
+                  <Eye className="h-4 w-4" />
+                  <span className="sr-only">Ver factura</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleDelete(invoice.id)
+                  }}
                   disabled={deletingId === invoice.id}
                   className="text-muted-foreground hover:text-destructive"
                 >
@@ -135,6 +158,12 @@ export function InvoiceList({ invoices, onDelete }: InvoiceListProps) {
           </CardContent>
         </Card>
       ))}
+
+      <InvoiceViewer
+        invoice={selectedInvoice}
+        open={viewerOpen}
+        onOpenChange={setViewerOpen}
+      />
     </div>
   )
 }
