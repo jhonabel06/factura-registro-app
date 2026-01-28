@@ -26,7 +26,7 @@ export default function AuthLayout({ children }) {
   return (
     <div>
       {session && <SidebarNext />}
-      <div className={session ? 'ml-40' : ''}>{children}</div>
+      <div className={session ? 'ml-0 md:ml-40' : ''}>{children}</div>
     </div>
   )
 }
