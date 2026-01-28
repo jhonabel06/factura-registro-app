@@ -20,3 +20,30 @@ export interface InvoiceSummary {
 }
 
 export type TimeRange = 'day' | 'week' | 'month' | 'all'
+
+// Tipos para autenticación y roles
+export interface Role {
+  id: string
+  name: 'admin' | 'Caja' | 'Registrador'
+  description?: string
+  created_at?: string
+  updated_at?: string
+}
+
+export interface UserRole {
+  id: string
+  user_id: string
+  role_id: string
+  assigned_at?: string
+  assigned_by?: string
+  role?: Role
+}
+
+export interface UserWithRoles {
+  id: string
+  email: string
+  roles: Role[]
+  hasRole: (roleName: 'admin' | 'Caja' | 'Registrador') => boolean
+}
+
+export type RoleName = 'admin' | 'Caja' | 'Registrador'

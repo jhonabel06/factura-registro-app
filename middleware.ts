@@ -4,6 +4,15 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr'
 // Rutas públicas que no requieren autenticación
 const publicRoutes = ['/login', '/register']
 
+// Rutas que requieren roles específicos
+const roleRoutes: Record<string, string[]> = {
+  '/': ['admin', 'Registrador', 'Caja'], // Home/Dashboard requiere rol
+  '/admin': ['admin'],
+  '/dashboard': ['admin', 'Registrador'],
+  '/register-invoice': ['admin', 'Registrador'],
+  '/pos': ['admin', 'Caja', 'Registrador'],
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
@@ -62,6 +71,37 @@ export async function middleware(request: NextRequest) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
+  }
+
+  // Verificar roles si la ruta requiere un rol específico
+  const requiredRoles = roleRoutes[pathname]
+  if (requiredRoles && requiredRoles.length > 0) {
+    // Obtener los roles del usuario
+    const { data: userRoles } = await supabase
+      .from('user_roles')
+      .select('role_id, roles(name)')
+      .eq('user_id', user.id)
+
+    const userRoleNames = userRoles?.map((ur: any) => ur.roles?.name) || []
+
+    // Verificar si el usuario tiene al menos uno de los roles requeridos
+    const hasRequiredRole = requiredRoles.some((role) =>
+      userRoleNames.includes(role)
+    )
+
+    if (!hasRequiredRole) {
+      // Si el usuario no tiene rol, redirigir a una página de sin rol
+      if (userRoleNames.length === 0) {
+        const url = request.nextUrl.clone()
+        url.pathname = '/no-role'
+        return NextResponse.redirect(url)
+      }
+
+      // Si tiene rol pero no el requerido, redirigir al dashboard
+      const url = request.nextUrl.clone()
+      url.pathname = '/dashboard'
+      return NextResponse.redirect(url)
+    }
   }
 
   return response

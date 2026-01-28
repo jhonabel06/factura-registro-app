@@ -310,8 +310,8 @@ export function InvoiceUpload({ onInvoiceSaved }: InvoiceUploadProps) {
               <p className="mb-4 text-sm text-muted-foreground">
                 o selecciona un archivo
               </p>
-              <div className="flex gap-3">
-                <Button variant="outline" asChild>
+              <div className="flex flex-col sm:flex-row gap-3 w-full sm:justify-center">
+                <Button variant="outline" asChild className="w-full sm:w-auto">
                   <label className="cursor-pointer">
                     <Upload className="mr-2 h-4 w-4" />
                     Subir archivo
@@ -323,7 +323,7 @@ export function InvoiceUpload({ onInvoiceSaved }: InvoiceUploadProps) {
                     />
                   </label>
                 </Button>
-                <Button variant="outline" asChild>
+                <Button variant="outline" asChild className="w-full sm:w-auto">
                   <label className="cursor-pointer">
                     <Camera className="mr-2 h-4 w-4" />
                     Tomar foto
