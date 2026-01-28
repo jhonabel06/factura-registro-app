@@ -15,7 +15,7 @@ export async function getInvoices(): Promise<Invoice[]> {
   const { data, error } = await supabase
     .from("invoices")
     .select("*")
-    .eq("user_id", user.id)
+    // .eq("user_id", user.id)
     .order("date", { ascending: false })
   
   if (error) {
