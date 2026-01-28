@@ -2,7 +2,6 @@
 "use client"
 
 import { useRouter } from 'next/navigation'
-import PropTypes from 'prop-types'
 import { supabase } from '../supabaseClient'
 
 const LogoutButton = ({ className, children }) => {
@@ -24,11 +23,6 @@ const LogoutButton = ({ className, children }) => {
       {children || 'Cerrar sesión'}
     </button>
   )
-}
-
-LogoutButton.propTypes = {
-  className: PropTypes.string,
-  children: PropTypes.node,
 }
 
 export default LogoutButton
